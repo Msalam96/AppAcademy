@@ -30,7 +30,7 @@ namespace Blahgger.Controllers
                 {
                     connection.Open();
                     string sql = @"
-                        Select FirstName, LastName
+                        Select Id, FirstName, LastName
                         From Users
                         Where Email = @Email and Password = @Password
                     ";
@@ -40,6 +40,7 @@ namespace Blahgger.Controllers
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
+                        user.Id = (int)reader["Id"];
                         user.FirstName = reader["FirstName"].ToString();
                         user.LastName = reader["LastName"].ToString();
                     }
@@ -108,7 +109,7 @@ namespace Blahgger.Controllers
                     command.Parameters.AddWithValue("@LastName", user.LastName);
                     command.Parameters.AddWithValue("@Email", user.Email);
                     command.Parameters.AddWithValue("@Password", user.Password);
-                    SqlDataReader reader = command.ExecuteReader();
+                    command.ExecuteNonQuery();
 
                     return RedirectToAction("Login");
                 }

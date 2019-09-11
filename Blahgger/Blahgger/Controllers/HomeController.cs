@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Blahgger.Models;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -14,7 +17,33 @@ namespace Blahgger.Controllers
         {
             ViewBag.CurrentUserEmail = User.Identity.Name;
 
-            return View();
+            string connectionString = ConfigurationManager.ConnectionStrings["BlahggerDatabase"].ConnectionString;
+
+            List<Blog> blogs = new List<Blog>();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = @"
+                    SELECT Id, Text, CreatedOn
+                    FROM Blogs
+                    Where UsersId = @UsersId
+                    ORDER BY CreatedOn DESC
+                ";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@UsersId", 1);
+
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Blog blog = new Blog();
+                    blog.Id = reader.GetInt32(0);
+                    blog.Text = reader.GetString(1);
+                    blog.CreatedOn = reader.GetDateTime(2);
+                    blogs.Add(blog);
+                }
+            }
+            return View(blogs);
         }
 
         [Authorize(Roles = "Admin")]

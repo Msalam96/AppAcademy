@@ -7,6 +7,26 @@
 
 <p>Welcome @ViewBag.CurrentUserEmail!</p>
 
+<h3>Your Posts</h3>
+<div>
+    <table>
+        <tr>
+            <th>Post</th>
+            <th>Posted</th>
+            <th></th>
+        </tr>
+        @foreach (var blog in Model)
+        {
+            <tr>
+                <td>@blog.Text</td>
+                <td>@blog.CreatedOn</td>
+                @*<td>@Html.ActionLink("Comments", )</td>*@
+            </tr>
+        }
+    </table>
+</div>
+
+<p>@Html.ActionLink("New Post", "Create", "Blog")</p>
 <div>
     @using (Html.BeginForm("Logout", "Account"))
     {
