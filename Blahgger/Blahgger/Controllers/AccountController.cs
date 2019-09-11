@@ -40,13 +40,17 @@ namespace Blahgger.Controllers
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        user.Name = reader["FirstName + ' ' LastName"].ToString();
-
+                        user.FirstName = reader["FirstName"].ToString();
+                        user.LastName = reader["LastName"].ToString();
                     }
 
                 }
                 // TODO check if the passwords match
-                if (!(user.Email == "james@smashdev.com" && user.Password == "password"))
+                //if (!(user.Email == "james@smashdev.com" && user.Password == "password"))
+                //{
+                //    ModelState.AddModelError("", "Login failed.");
+                //}
+                if (String.IsNullOrEmpty(user.FirstName))
                 {
                     ModelState.AddModelError("", "Login failed.");
                 }
@@ -64,13 +68,53 @@ namespace Blahgger.Controllers
             return View(user);
         }
 
-        //[HttpPost]
-        //public ActionResult Logout()
-        //{
-        //    FormsAuthentication.SignOut();
+        [HttpPost]
+        public ActionResult Logout()
+        {
+           FormsAuthentication.SignOut();
 
-        //    return RedirectToAction("Login");
-        //}
+           return RedirectToAction("Login");
+        }
+
+        [AllowAnonymous]
+        public ActionResult SignUp()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult SignUp(FormCollection collection)
+        {
+
+            User user = new User();
+            user.FirstName = collection.Get("FirstName");
+            user.LastName = collection.Get("LastName");
+            user.Email = collection.Get("Email");
+            user.Password = collection.Get("Password");
+
+            if (ModelState.IsValidField("Email") && ModelState.IsValidField("Password") &&
+                ModelState.IsValidField("FirstName") && ModelState.IsValidField("LastName"))
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["BlahggerDatabase"].ConnectionString;
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string sql = @"
+                        Insert into Users(FirstName, LastName, Email, Password)
+                        Values(@FirstName, @LastName, @Email, @Password)
+                    ";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@FirstName", user.FirstName);
+                    command.Parameters.AddWithValue("@LastName", user.LastName);
+                    command.Parameters.AddWithValue("@Email", user.Email);
+                    command.Parameters.AddWithValue("@Password", user.Password);
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    return RedirectToAction("Login");
+                }
+            }
+            return View(user);
+        }
         // GET: Account
         //public ActionResult Index()
         //{
