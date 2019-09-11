@@ -9,7 +9,7 @@ namespace Blahgger.Models
     {
         public int Id { get; set; }
 
-        public int UsersId { get; set; }
+        public int UsersId { get; internal set; }
 
         public string Text { get; set; }
 
